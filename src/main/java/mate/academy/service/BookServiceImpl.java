@@ -1,11 +1,9 @@
 package mate.academy.service;
 
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import mate.academy.model.Book;
 import mate.academy.repository.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

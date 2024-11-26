@@ -1,7 +1,6 @@
 package mate.academy.repository;
 
 import java.util.List;
-
 import lombok.RequiredArgsConstructor;
 import mate.academy.model.Book;
 import org.hibernate.Session;
