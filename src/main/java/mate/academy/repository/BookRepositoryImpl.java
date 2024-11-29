@@ -1,6 +1,8 @@
 package mate.academy.repository;
 
+import jakarta.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.model.Book;
 import org.hibernate.Session;
@@ -42,6 +44,14 @@ public class BookRepositoryImpl implements BookRepository {
             return session.createQuery("from Book", Book.class).list();
         } catch (Exception e) {
             throw new RuntimeException("Failed to get all books", e);
+        }
+    }
+
+    @Override
+    public Optional<Book> getBookById(Long id) {
+        try (EntityManager entityManager = sessionFactory.createEntityManager()) {
+            Book book = entityManager.find(Book.class, id);
+            return Optional.ofNullable(book);
         }
     }
 }
