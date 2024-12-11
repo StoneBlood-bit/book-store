@@ -1,8 +1,9 @@
 package mate.academy.service;
 
-import mate.academy.dto.CreateUserRequestDto;
-import mate.academy.dto.UserDto;
+import mate.academy.dto.user.UserRegistrationRequestDto;
+import mate.academy.dto.user.UserResponseDto;
+import mate.academy.exception.RegistrationException;
 
 public interface UserService {
-    UserDto save(CreateUserRequestDto requestDto);
+    UserResponseDto register(UserRegistrationRequestDto requestDto) throws RegistrationException;
 }
