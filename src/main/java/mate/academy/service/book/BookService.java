@@ -1,4 +1,4 @@
-package mate.academy.service;
+package mate.academy.service.book;
 
 import mate.academy.dto.book.BookDto;
 import mate.academy.dto.book.CreateBookRequestDto;

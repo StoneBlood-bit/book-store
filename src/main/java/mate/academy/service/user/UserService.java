@@ -1,4 +1,4 @@
-package mate.academy.service;
+package mate.academy.service.user;
 
 import mate.academy.dto.user.UserRegistrationRequestDto;
 import mate.academy.dto.user.UserResponseDto;

@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.book.BookDto;
 import mate.academy.dto.book.CreateBookRequestDto;
-import mate.academy.service.BookService;
+import mate.academy.service.book.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
