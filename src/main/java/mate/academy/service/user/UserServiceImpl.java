@@ -7,7 +7,6 @@ import mate.academy.exception.RegistrationException;
 import mate.academy.mapper.UserMapper;
 import mate.academy.model.User;
 import mate.academy.repository.UserRepository;
-import mate.academy.service.user.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
