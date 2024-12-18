@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "User registration", description = "Endpoint for registration user")
+@Tag(name = "User registration", description = "Endpoints for registration and authentication user")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/auth")
@@ -23,6 +23,7 @@ public class AuthenticationController {
     private final UserService userService;
     private final AuthenticationService authenticationService;
 
+    @Operation(summary = "login user", description = "user authentication")
     @RequestMapping("/login")
     public UserLoginResponseDto login(@RequestBody @Valid UserLoginRequestDto requestDto) {
         return authenticationService.authenticate(requestDto);
