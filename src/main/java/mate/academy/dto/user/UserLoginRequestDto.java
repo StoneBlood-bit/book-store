@@ -8,13 +8,6 @@ public record UserLoginRequestDto(
         @Email
         String email,
         @NotBlank
-        String password,
-        @NotBlank
-        String repeatPassword,
-        @NotBlank
-        String firstName,
-        @NotBlank
-        String lastName,
-        String shippingAddress
+        String password
 ) {
 }
