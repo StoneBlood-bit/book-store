@@ -11,6 +11,7 @@ import mate.academy.dto.user.UserResponseDto;
 import mate.academy.exception.RegistrationException;
 import mate.academy.security.AuthenticationService;
 import mate.academy.service.user.UserService;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @Operation(summary = "login user", description = "user authentication")
-    @RequestMapping("/login")
+    @PostMapping("/login")
     public UserLoginResponseDto login(@RequestBody @Valid UserLoginRequestDto requestDto) {
         return authenticationService.authenticate(requestDto);
     }
