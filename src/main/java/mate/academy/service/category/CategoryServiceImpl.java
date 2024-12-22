@@ -3,7 +3,6 @@ package mate.academy.service.category;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.book.BookDtoWithoutCategoryIds;
 import mate.academy.dto.category.CategoryDto;
@@ -65,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
         List<Book> bookList = bookRepository.findByCategories_Id(id);
         return bookList.stream()
                 .map(bookMapper::toDtoWithoutCategories)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
