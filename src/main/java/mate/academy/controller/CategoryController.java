@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.book.BookDtoWithoutCategoryIds;
 import mate.academy.dto.category.CategoryDto;
+import mate.academy.service.book.BookService;
 import mate.academy.service.category.CategoryService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/categories")
 public class CategoryController {
     private final CategoryService categoryService;
+    private final BookService bookService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create a new category", description = "Create a new category")
@@ -82,6 +84,6 @@ public class CategoryController {
     )
     @GetMapping("/{id}/books")
     public List<BookDtoWithoutCategoryIds> getBooksByCategoryId(@PathVariable Long id) {
-        return categoryService.getBooksByCategoryId(id);
+        return bookService.getBooksByCategoryId(id);
     }
 }

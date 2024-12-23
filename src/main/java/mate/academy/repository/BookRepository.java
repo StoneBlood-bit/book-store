@@ -5,6 +5,6 @@ import mate.academy.model.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-    List<Book> findByCategories_Id(Long categoryId);
+    List<Book> findByCategoriesId(Long categoryId);
 
 }

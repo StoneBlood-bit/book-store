@@ -4,12 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import mate.academy.dto.book.BookDtoWithoutCategoryIds;
 import mate.academy.dto.category.CategoryDto;
 import mate.academy.exception.EntityNotFoundException;
 import mate.academy.mapper.BookMapper;
 import mate.academy.mapper.CategoryMapper;
-import mate.academy.model.Book;
 import mate.academy.model.Category;
 import mate.academy.repository.BookRepository;
 import mate.academy.repository.CategoryRepository;
@@ -57,14 +55,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteById(Long id) {
         categoryRepository.deleteById(id);
-    }
-
-    @Override
-    public List<BookDtoWithoutCategoryIds> getBooksByCategoryId(Long id) {
-        List<Book> bookList = bookRepository.findByCategories_Id(id);
-        return bookList.stream()
-                .map(bookMapper::toDtoWithoutCategories)
-                .toList();
     }
 
     @Override
