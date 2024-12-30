@@ -37,8 +37,8 @@ public class UserServiceImpl implements UserService {
         Role userRole = roleRepository.findByName("USER").orElseThrow(
                 () -> new EntityNotFoundException("Role " + Role.RoleName.USER + " not found"));
         user.setRoles(Set.of(userRole));
-        User savedUser = userRepository.save(user);
-        shoppingCartService.createShoppingCart(savedUser);
-        return userMapper.toUserResponse(savedUser);
+        userRepository.save(user);
+        shoppingCartService.createShoppingCart(user);
+        return userMapper.toUserResponse(user);
     }
 }
