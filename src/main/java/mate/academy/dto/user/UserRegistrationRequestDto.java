@@ -2,10 +2,8 @@ package mate.academy.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import mate.academy.annotation.FieldMatch;
-import mate.academy.model.ShoppingCart;
 
 @Data
 @FieldMatch(
@@ -31,7 +29,4 @@ public class UserRegistrationRequestDto {
     private String lastName;
 
     private String shippingAddress;
-
-    @NotNull
-    private ShoppingCart shoppingCart;
 }
