@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.order.OrderDto;
 import mate.academy.dto.order.OrderRequestDto;
+import mate.academy.dto.order.UpdateOrderStatusDto;
 import mate.academy.model.User;
 import mate.academy.service.order.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Order management", description = "Endpoint for managing orders")
@@ -30,8 +30,9 @@ public class OrderController {
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Create order", description = "Create a new order")
     @PostMapping
-    public OrderDto createOrder(@RequestBody @Valid OrderRequestDto requestDto) {
-        return orderService.createOrder(requestDto);
+    public OrderDto createOrder(@RequestBody @Valid OrderRequestDto requestDto,
+                                @AuthenticationPrincipal User user) {
+        return orderService.createOrder(requestDto, user.getId());
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -52,7 +53,10 @@ public class OrderController {
     @Operation(summary = "Update order's status",
             description = "Update status for order with a passed id")
     @PatchMapping("/{id}")
-    public OrderDto updateOrderStatus(@PathVariable Long orderId, @RequestParam String status) {
-        return orderService.updateOrderStatus(orderId, status);
+    public OrderDto updateOrderStatus(
+            @PathVariable Long orderId,
+            @RequestBody UpdateOrderStatusDto updateOrderStatusDto
+    ) {
+        return orderService.updateOrderStatus(orderId, updateOrderStatusDto.getStatus());
     }
 }

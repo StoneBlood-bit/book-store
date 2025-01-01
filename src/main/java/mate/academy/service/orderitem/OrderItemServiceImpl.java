@@ -1,7 +1,6 @@
 package mate.academy.service.orderitem;
 
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import mate.academy.dto.orderitem.OrderItemDto;
 import mate.academy.exception.EntityNotFoundException;
@@ -25,8 +24,8 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Override
     public OrderItemDto getOrderItemById(Long orderId, Long itemId) {
-        OrderItem orderItem = Optional.ofNullable(orderItemRepository
-                .findByOrderIdAndId(orderId, itemId))
+        OrderItem orderItem = orderItemRepository
+                .findByOrderIdAndId(orderId, itemId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Order item not found for orderId: "
                         + orderId
