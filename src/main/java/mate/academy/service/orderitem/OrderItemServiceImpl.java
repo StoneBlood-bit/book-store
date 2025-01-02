@@ -27,10 +27,8 @@ public class OrderItemServiceImpl implements OrderItemService {
         OrderItem orderItem = orderItemRepository
                 .findByOrderIdAndId(orderId, itemId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Order item not found for orderId: "
-                        + orderId
-                        + " and itemId: "
-                        + itemId));
+                        String.format("Order item not found for orderId: %d and itemId: %d",
+                                orderId, itemId)));
         return orderItemMapper.toDto(orderItem);
     }
 }

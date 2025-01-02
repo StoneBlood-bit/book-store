@@ -8,8 +8,11 @@ import lombok.RequiredArgsConstructor;
 import mate.academy.dto.order.OrderDto;
 import mate.academy.dto.order.OrderRequestDto;
 import mate.academy.dto.order.UpdateOrderStatusDto;
+import mate.academy.dto.orderitem.OrderItemDto;
 import mate.academy.model.User;
 import mate.academy.service.order.OrderService;
+import mate.academy.service.orderitem.OrderItemService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Order management", description = "Endpoint for managing orders")
@@ -26,9 +30,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/orders")
 public class OrderController {
     private final OrderService orderService;
+    private final OrderItemService orderItemService;
 
     @PreAuthorize("hasRole('USER')")
     @Operation(summary = "Create order", description = "Create a new order")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public OrderDto createOrder(@RequestBody @Valid OrderRequestDto requestDto,
                                 @AuthenticationPrincipal User user) {
@@ -58,5 +64,19 @@ public class OrderController {
             @RequestBody UpdateOrderStatusDto updateOrderStatusDto
     ) {
         return orderService.updateOrderStatus(orderId, updateOrderStatusDto.getStatus());
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Get order items", description = "Get list of order items by order id")
+    @GetMapping("/{orderId}/items")
+    public List<OrderItemDto> getOrderItems(@PathVariable Long orderId) {
+        return orderItemService.getOrderItemsByOrderId(orderId);
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @Operation(summary = "Get order item", description = "Get a specific item in the order")
+    @GetMapping("/{orderId}/items/{itemId}")
+    public OrderItemDto getOrderItem(@PathVariable Long orderId, @PathVariable Long itemId) {
+        return orderItemService.getOrderItemById(orderId, itemId);
     }
 }

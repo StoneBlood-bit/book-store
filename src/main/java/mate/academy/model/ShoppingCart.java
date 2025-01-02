@@ -8,6 +8,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import java.util.HashSet;
@@ -22,6 +25,19 @@ import org.hibernate.annotations.SQLRestriction;
 @Getter
 @Setter
 @Entity(name = "shopping_carts")
+@NamedEntityGraph(
+        name = "ShoppingCart.itemsAndBooks",
+        attributeNodes = {
+                @NamedAttributeNode("cartItems"),
+                @NamedAttributeNode(value = "cartItems", subgraph = "cartItems.books")
+        },
+        subgraphs = {
+                @NamedSubgraph(
+                        name = "cartItems.books",
+                        attributeNodes = @NamedAttributeNode("book")
+                )
+        }
+)
 public class ShoppingCart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

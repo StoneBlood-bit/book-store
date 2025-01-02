@@ -17,9 +17,11 @@ import mate.academy.repository.OrderRepository;
 import mate.academy.repository.ShoppingCartRepository;
 import mate.academy.service.orderitem.OrderItemService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
