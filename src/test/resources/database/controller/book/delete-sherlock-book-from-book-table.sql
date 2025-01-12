@@ -1,0 +1,1 @@
+delete from books where title = 'Sherlock Holmes' and author = 'Arthur Ignatius Conan Doyle';
