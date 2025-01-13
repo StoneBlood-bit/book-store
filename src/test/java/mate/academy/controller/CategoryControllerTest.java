@@ -1,15 +1,13 @@
 package mate.academy.controller;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,7 +19,6 @@ import mate.academy.dto.category.CategoryDto;
 import mate.academy.security.JwtUtil;
 import mate.academy.service.category.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -49,11 +46,6 @@ public class CategoryControllerTest {
 
     @Mock
     private CategoryServiceImpl categoryService;
-
-    @BeforeEach
-    void setUp() {
-        when(jwtUtil.isValidToken(anyString())).thenReturn(true);
-    }
 
     @BeforeAll
     static void beforeAll(
@@ -93,6 +85,30 @@ public class CategoryControllerTest {
         assertNotNull(actual);
         assertNotNull(actual.getId());
         assertEquals(expected.getName(), actual.getName());
+    }
+
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Sql(
+            scripts = "classpath:database/controller/category/delete-categories.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("Fail to create category with invalid dto")
+    @Test
+    void createCategory_InvalidDto_Failure() throws Exception {
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setName("");
+
+        String jsonRequest = objectMapper.writeValueAsString(categoryDto);
+
+        mockMvc.perform(post("/categories")
+                .content(jsonRequest)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasItems(
+                        "name must not be blank"
+                )))
+                .andReturn();
     }
 
     @WithMockUser(username = "user", roles = {"USER"})
@@ -160,8 +176,6 @@ public class CategoryControllerTest {
         expected.setId(validId);
         expected.setName("Detective");
 
-        when(categoryService.getById(validId)).thenReturn(expected);
-
         MvcResult result = mockMvc.perform(get("/categories/{id}", validId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -171,6 +185,26 @@ public class CategoryControllerTest {
         CategoryDto actual = objectMapper.readValue(jsonResponse, CategoryDto.class);
 
         assertEquals(expected, actual);
+    }
+
+    @WithMockUser(username = "user", roles = {"USER"})
+    @Sql(
+            scripts = "classpath:database/controller/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/controller/category/delete-categories.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("Get category by invalid id")
+    @Test
+    void getCategoryById_InvalidId_NotFound() throws Exception {
+        Long invalidId = 999L;
+
+        mockMvc.perform(get("/categories/{id}", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -191,9 +225,6 @@ public class CategoryControllerTest {
         updated.setId(categoryId);
         updated.setName("Detective");
 
-        when(categoryService.update(eq(categoryId), any(CategoryDto.class)))
-                .thenReturn(updated);
-
         MvcResult result = mockMvc.perform(put("/categories/{id}", categoryId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
@@ -205,5 +236,35 @@ public class CategoryControllerTest {
 
         assertEquals(updated.getId(), actualUpdated.getId());
         assertEquals(updated.getName(), actualUpdated.getName());
+    }
+
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Sql(
+            scripts = "classpath:database/controller/category/add-one-category.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/controller/category/delete-categories.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("Fail to update category with invalid data")
+    @Test
+    void updateCategory_InvalidData_Failure() throws Exception {
+        CategoryDto categoryDto = new CategoryDto();
+        categoryDto.setName("");
+
+        Long categoryId = 1L;
+
+        String jsonRequest = objectMapper.writeValueAsString(categoryDto);
+
+        mockMvc.perform(put("/categories/{id}", categoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonRequest))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasItems(
+                        "name must not be blank"
+                )))
+                .andReturn();
     }
 }

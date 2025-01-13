@@ -1,15 +1,15 @@
 package mate.academy.controller;
 
+import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,7 +23,6 @@ import mate.academy.dto.book.CreateBookRequestDto;
 import mate.academy.security.JwtUtil;
 import mate.academy.service.book.BookServiceImpl;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -50,11 +49,6 @@ public class BookControllerTest {
 
     @Mock
     private BookServiceImpl bookService;
-
-    @BeforeEach
-    void setUp() {
-        when(jwtUtil.isValidToken(anyString())).thenReturn(true);
-    }
 
     @BeforeAll
     static void beforeAll(
@@ -99,10 +93,37 @@ public class BookControllerTest {
                 .readValue(result.getResponse().getContentAsString(), BookDto.class);
         assertNotNull(actual);
         assertNotNull(actual.getId());
-        assertEquals(expected.getTitle(), actual.getTitle());
-        assertEquals(expected.getAuthor(), actual.getAuthor());
-        assertEquals(expected.getIsbn(), actual.getIsbn());
-        assertEquals(expected.getPrice(), actual.getPrice());
+        assertTrue(reflectionEquals(expected, actual, "id"));
+    }
+
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Sql(
+            scripts = "classpath:database/controller/book/delete-books.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @Test
+    @DisplayName("Fail to create a book with invalid request")
+    void createBook_InvalidRequestDto_Failure() throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+        requestDto.setTitle("");
+        requestDto.setAuthor("A");
+        requestDto.setIsbn("123");
+        requestDto.setPrice(BigDecimal.valueOf(-10));
+        requestDto.setCategoryIds(List.of());
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        mockMvc.perform(post("/books")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasItems(
+                        "price must be greater than or equal to 0",
+                        "title must not be blank",
+                        "categoryIds must not be empty"
+                )))
+                .andReturn();
     }
 
     @WithMockUser(username = "user", roles = {"USER"})
@@ -155,6 +176,7 @@ public class BookControllerTest {
                 .readValue(jsonResponse, new TypeReference<>() {});
         List<BookDto> actualList = actualPage.getContent();
 
+        assertNotNull(actualPage);
         assertEquals(3, actualList.size());
         assertEquals(expected, actualList);
     }
@@ -179,8 +201,6 @@ public class BookControllerTest {
         expected.setIsbn("674-465-23");
         expected.setPrice(BigDecimal.valueOf(65.99));
 
-        when(bookService.getBookById(validId)).thenReturn(expected);
-
         MvcResult result = mockMvc.perform(get("/books/{id}", validId)
                     .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -190,6 +210,26 @@ public class BookControllerTest {
         BookDto actualBook = objectMapper.readValue(jsonResponse, BookDto.class);
 
         assertEquals(expected, actualBook);
+    }
+
+    @WithMockUser(username = "user", roles = {"USER"})
+    @Sql(
+            scripts = "classpath:database/controller/book/add-one-book.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/controller/book/delete-books.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("Get book by invalid id")
+    @Test
+    void getBookById_InvalidId_NotFound() throws Exception {
+        Long invalidId = 999L;
+
+        mockMvc.perform(get("/books/{id}", invalidId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andReturn();
     }
 
     @WithMockUser(username = "admin", roles = {"ADMIN"})
@@ -220,9 +260,6 @@ public class BookControllerTest {
         updatedBookDto.setIsbn("123-456-789");
         updatedBookDto.setPrice(BigDecimal.valueOf(49.99));
 
-        when(bookService.updateBook(eq(bookId), any(CreateBookRequestDto.class)))
-                .thenReturn(updatedBookDto);
-
         MvcResult result = mockMvc.perform(put("/books/{id}", bookId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
@@ -232,10 +269,43 @@ public class BookControllerTest {
         String jsonResponse = result.getResponse().getContentAsString();
         BookDto actualUpdatedBookDto = objectMapper.readValue(jsonResponse, BookDto.class);
 
-        assertEquals(updatedBookDto.getId(), actualUpdatedBookDto.getId());
-        assertEquals(updatedBookDto.getTitle(), actualUpdatedBookDto.getTitle());
-        assertEquals(updatedBookDto.getAuthor(), actualUpdatedBookDto.getAuthor());
-        assertEquals(updatedBookDto.getIsbn(), actualUpdatedBookDto.getIsbn());
-        assertEquals(updatedBookDto.getPrice(), actualUpdatedBookDto.getPrice());
+        assertTrue(reflectionEquals(updatedBookDto, actualUpdatedBookDto));
     }
+
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    @Sql(
+            scripts = "classpath:database/controller/book/add-book-for-update.sql",
+            executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = "classpath:database/controller/book/delete-books.sql",
+            executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
+    )
+    @DisplayName("Fail to update book with invalid data")
+    @Test
+    void updateBook_InvalidData_Failure() throws Exception {
+        CreateBookRequestDto requestDto = new CreateBookRequestDto();
+        requestDto.setTitle("");
+        requestDto.setAuthor("A");
+        requestDto.setIsbn("123");
+        requestDto.setPrice(BigDecimal.valueOf(-10));
+        requestDto.setCategoryIds(List.of());
+
+        Long bookId = 1L;
+
+        String jsonRequest = objectMapper.writeValueAsString(requestDto);
+
+        mockMvc.perform(put("/books/{id}", bookId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors").exists())
+                .andExpect(jsonPath("$.errors", hasItems(
+                        "price must be greater than or equal to 0",
+                        "title must not be blank",
+                        "categoryIds must not be empty"
+                )))
+                .andReturn();
+    }
+
 }
