@@ -41,6 +41,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void deleteById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID must not be null");
+        }
         bookRepository.deleteById(id);
     }
 
