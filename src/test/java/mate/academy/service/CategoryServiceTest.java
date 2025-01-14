@@ -2,6 +2,9 @@ package mate.academy.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -48,14 +50,14 @@ public class CategoryServiceTest {
         savedCategory.setId(1L);
         savedCategory.setName(category.getName());
 
-        Mockito.when(categoryMapper.toEntity(categoryDto)).thenReturn(category);
-        Mockito.when(categoryRepository.save(category)).thenReturn(category);
-        Mockito.when(categoryMapper.toDto(category)).thenReturn(savedCategory);
+        when(categoryMapper.toEntity(categoryDto)).thenReturn(category);
+        when(categoryRepository.save(category)).thenReturn(category);
+        when(categoryMapper.toDto(category)).thenReturn(savedCategory);
 
         CategoryDto result = categoryService.save(categoryDto);
 
         assertThat(result).isEqualTo(savedCategory);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -73,14 +75,14 @@ public class CategoryServiceTest {
         List<Category> categories = List.of(category);
         Page<Category> categoryPage = new PageImpl<>(categories, pageable, categories.size());
 
-        Mockito.when(categoryRepository.findAll(pageable)).thenReturn(categoryPage);
-        Mockito.when(categoryMapper.toDto(category)).thenReturn(categoryDto);
+        when(categoryRepository.findAll(pageable)).thenReturn(categoryPage);
+        when(categoryMapper.toDto(category)).thenReturn(categoryDto);
 
         Page<CategoryDto> actualPage = categoryService.findAll(pageable);
 
         assertThat(actualPage).hasSize(1);
         assertThat(actualPage.getContent().get(0)).isEqualTo(categoryDto);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -96,13 +98,13 @@ public class CategoryServiceTest {
         categoryDto.setId(category.getId());
         categoryDto.setName(category.getName());
 
-        Mockito.when(categoryRepository.findById(validId)).thenReturn(Optional.of(category));
-        Mockito.when(categoryMapper.toDto(category)).thenReturn(categoryDto);
+        when(categoryRepository.findById(validId)).thenReturn(Optional.of(category));
+        when(categoryMapper.toDto(category)).thenReturn(categoryDto);
 
         CategoryDto actualCategoryDto = categoryService.getById(validId);
 
         assertThat(actualCategoryDto).isEqualTo(categoryDto);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -110,7 +112,7 @@ public class CategoryServiceTest {
     void getById_InvalidId_ShouldReturnEntityNotFoundException() {
         Long invalidId = 99L;
 
-        Mockito.when(categoryRepository.findById(invalidId)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
@@ -118,7 +120,7 @@ public class CategoryServiceTest {
         );
 
         assertThat(exception.getMessage()).isEqualTo("Can't get category by id:" + invalidId);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -141,18 +143,18 @@ public class CategoryServiceTest {
         savedCategoryDto.setId(validId);
         savedCategoryDto.setName(updatedCategory.getName());
 
-        Mockito.when(categoryRepository.findById(validId))
+        when(categoryRepository.findById(validId))
                 .thenReturn(Optional.of(existingCategory));
-        Mockito.doNothing().when(categoryMapper)
+        doNothing().when(categoryMapper)
                 .updateCategoryFromDto(categoryDto, existingCategory);
-        Mockito.when(categoryRepository.save(existingCategory))
+        when(categoryRepository.save(existingCategory))
                 .thenReturn(updatedCategory);
-        Mockito.when(categoryMapper.toDto(updatedCategory)).thenReturn(savedCategoryDto);
+        when(categoryMapper.toDto(updatedCategory)).thenReturn(savedCategoryDto);
 
         CategoryDto result = categoryService.update(validId, categoryDto);
 
         assertThat(result).isEqualTo(savedCategoryDto);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -162,7 +164,7 @@ public class CategoryServiceTest {
 
         CategoryDto categoryDto = new CategoryDto();
 
-        Mockito.when(categoryRepository.findById(invalidId)).thenReturn(Optional.empty());
+        when(categoryRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         EntityNotFoundException exception = assertThrows(
                 EntityNotFoundException.class,
@@ -170,7 +172,7 @@ public class CategoryServiceTest {
         );
 
         assertThat(exception.getMessage()).isEqualTo("Can't get category by id: " + invalidId);
-        Mockito.verifyNoMoreInteractions(categoryRepository, categoryMapper);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
     }
 
     @Test
@@ -186,12 +188,12 @@ public class CategoryServiceTest {
 
         List<Long> ids = List.of(1L, 2L);
 
-        Mockito.when(categoryRepository.findAllById(ids)).thenReturn(List.of(category1, category2));
+        when(categoryRepository.findAllById(ids)).thenReturn(List.of(category1, category2));
 
         Set<Category> categories = categoryService.findByIds(ids);
 
         assertThat(categories).containsExactlyInAnyOrder(category1, category2);
-        Mockito.verifyNoMoreInteractions(categoryRepository);
+        verifyNoMoreInteractions(categoryRepository);
     }
 
     @Test
@@ -199,11 +201,11 @@ public class CategoryServiceTest {
     void findByIds_InvalidIds_ShouldReturnEmptyList() {
         List<Long> invalidIds = List.of(9999L, 10000L);
 
-        Mockito.when(categoryRepository.findAllById(invalidIds)).thenReturn(List.of());
+        when(categoryRepository.findAllById(invalidIds)).thenReturn(List.of());
 
         Set<Category> categories = categoryService.findByIds(invalidIds);
 
         assertThat(categories).isEmpty();
-        Mockito.verifyNoMoreInteractions(categoryRepository);
+        verifyNoMoreInteractions(categoryRepository);
     }
 }

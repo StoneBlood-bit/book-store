@@ -177,6 +177,7 @@ public class BookControllerTest {
         List<BookDto> actualList = actualPage.getContent();
 
         assertNotNull(actualPage);
+        assertNotNull(actualPage.getContent());
         assertEquals(3, actualList.size());
         assertEquals(expected, actualList);
     }

@@ -154,6 +154,8 @@ public class CategoryControllerTest {
 
         List<CategoryDto> actualList = actualPage.getContent();
 
+        assertNotNull(actualPage);
+        assertNotNull(actualPage.getContent());
         assertEquals(3, actualList.size());
         assertEquals(expected, actualList);
     }
