@@ -30,6 +30,9 @@ The application also supports functionality for managing users and their orders.
 ## Project's API
 [View Postman Collection](https://planetary-robot-110333.postman.co/workspace/New-Team-Workspace~46449146-b028-4eca-8cfa-e24a2eb681d2/collection/40055606-66feecc3-cd7d-4096-ac1d-94da64da0a5d?action=share&creator=40055606)
 
+## DB Diagram
+![Example Image](db-diagram.png)
+
 ## Installation and Setup
 
 ### Prerequisites
