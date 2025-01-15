@@ -61,5 +61,5 @@ The application also supports functionality for managing users and their orders.
   DEBUG_PORT=5005
 - Run Docker Compose:
    ```bash
-  docker-compose up
-- Access the Application: Open your browser and go to http://localhost:9090.
+  docker-compose up --build
+- Access the Application: Open your browser and go to http://localhost:8080.
